@@ -1,0 +1,164 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Aplikacja Sędziowska - Kendzior FurmanS</title>
+    <style>
+    body {
+      background-color: white;
+    }
+    header, footer {
+        color: white;
+        background-color: white;
+        clear: left;
+        text-align: center;
+      }
+      footer {
+          padding: 0.1em;
+          color: white;
+          background-color: black;
+          clear: left;
+          text-align: left;
+          font-size: 1em;
+        }
+      div.kwadrat {
+          float: left;
+          width: 265px;
+          height: 640px;
+          margin: 50px;
+          margin-left: 50px;
+          margin-right: 0px;
+          border: 1px solid rgba(0, 0, 0, .2);
+          text-align: center;
+      }
+
+       .logo {
+	    display: block;
+	    margin: auto;
+	    margin-left: auto;
+	    margin-right: auto;
+	    width: 87%;
+	    vertical-align: middle;
+	    padding-top: 170px;
+
+	}
+      .red    { background-color: red; }
+      .green  { background-color: white; }
+      .none   {display: none;}
+      .clock {color: white;}
+    </style>
+    <script type="text/javascript" src="../static/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/socket.io.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            namespace = '/test'; // change to an empty string to use the global namespace
+
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+            socket.on('connect', function(msg) {
+		    socket.emit('my event', {data: 'FE=>BE polaczylem sie!'});
+            });
+
+            var myMap = new Map();
+            var zezwolNaGlosowanie = true;
+            socket.on('message', function(msg){
+                if (zezwolNaGlosowanie) {
+                  console.log(msg.sedzia +" "+ msg.kolor +" "+ msg.pin +" "+ msg.glosNaTak)
+                var kwadrat = null;
+                if (msg.pin == 11 || msg.pin == 29 ){
+                  console.log("WCISNIETO 11 LUB 29");
+                  myMap[1] = true;
+                  kwadrat = $("#1");
+                } else if(msg.pin == 13 || msg.pin == 31 ) {
+                  console.log("WCISNIETO 13 LUB 31");
+                  myMap[2] = true;
+                  kwadrat = $("#2");
+                } else {
+                  console.log("WCISNIETO 15 LUB 33");
+                  myMap[3] = true;
+                  kwadrat = $("#3");
+                }
+                if (kwadrat.hasClass('red')) {
+                  console.log("USUWAM RED")
+                  kwadrat.removeClass('red');
+                }
+                if (kwadrat.hasClass('green')) {
+                  console.log("Usuwam GREEN")
+                  kwadrat.removeClass('green');
+                }
+                console.log("Dodaje kolor " +msg.kolor)
+                kwadrat.addClass(msg.kolor);
+                if(myMap[1] == true && myMap[2] == true && myMap[3] == true){
+                  console.log("Usuwam klase none");
+                  $("#wyniki").removeClass('none');
+		  $("#lg").addClass('none');
+		  document.body.style.backgroundColor = "black";
+                  zezwolNaGlosowanie = false;
+                  setTimeout(function(){
+                    $("#wyniki").addClass('none');
+		    $("#lg").removeClass('none');
+		    document.body.style.backgroundColor = "white";
+                    zezwolNaGlosowanie = true;
+                  }
+                  , 10000);
+                  myMap = {};
+                } else {
+                  console.log("Czekam na oddanie wszystkich glosow!");
+                }
+              } else {
+                zezwolNaGlosowanie = false;
+              }
+            });
+
+        });
+
+	function zmienTlo() {
+    		document.body.style.backgroundColor = "#f3f3f3";
+    		document.body.style.backgroundImage = "url('../static/logoPL.png')";
+		}
+
+        // 24 hour clock
+          setInterval(function() {
+            var currentTime = new Date();
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds();
+            // Add leading zeros
+            hours = (hours < 10 ? "0" : "") + hours;
+            minutes = (minutes < 10 ? "0" : "") + minutes;
+            seconds = (seconds < 10 ? "0" : "") + seconds;
+            // Compose the string for display
+            var currentTimeString = hours + ":" + minutes + ":" + seconds;
+            $(".clock").html(currentTimeString);
+          }, 1000);
+
+
+    </script>
+</head>
+<body>
+  <header>
+    <!--<h1>Aplikacja Sędziowska</h1>
+    <h1><div class="clock"></div></h1>-->
+    
+  </header>
+  <!-- # Piny na głos TAK- 11, 13, 15
+       # Piny na głos NIE-  29, 31, 33
+  -->
+<img id="lg" src="../static/logoPL.png" alt="Politechnika Łódzka" class="logo">
+<div id="wyniki" class="none">
+    <div class="kwadrat" id="1"></div>
+    <div class="kwadrat" id="2"></div>
+    <div class="kwadrat" id="3"></div>
+</div>
+
+<!--
+<footer>
+  &copy; KendziorYFurmanS - StreetLightLaboratory
+</footer>
+-->
+
+</body>
+
+</html>
