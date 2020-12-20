@@ -1,5 +1,5 @@
-FurmanS KendzioR 2018 !
-
+FurmanS 2018
+=================
 Warte uwagi :
 https://nestjs.com/
 https://feathersjs.com/
